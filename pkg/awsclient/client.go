@@ -38,6 +38,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/aws/aws-sdk-go/service/sts"
 )
 
 const (
@@ -85,6 +86,9 @@ type Client interface {
 	CreateHostedZone(input *route53.CreateHostedZoneInput) (*route53.CreateHostedZoneOutput, error)
 	DeleteHostedZone(input *route53.DeleteHostedZoneInput) (*route53.DeleteHostedZoneOutput, error)
 	ListHostedZones(input *route53.ListHostedZonesInput) (*route53.ListHostedZonesOutput, error)
+
+	//STS
+	GetCallerIdentity(input *sts.GetCallerIdentityInput) (*sts.GetCallerIdentityOutput, error)
 }
 
 type awsClient struct {
@@ -93,6 +97,7 @@ type awsClient struct {
 	iamClient     iamiface.IAMAPI
 	route53Client route53iface.Route53API
 	s3Client      s3iface.S3API
+	stsClient     *sts.STS
 }
 
 func (c *awsClient) DescribeAvailabilityZones(input *ec2.DescribeAvailabilityZonesInput) (*ec2.DescribeAvailabilityZonesOutput, error) {
@@ -150,6 +155,7 @@ func (c *awsClient) DeleteUser(input *iam.DeleteUserInput) (*iam.DeleteUserOutpu
 func (c *awsClient) DeleteUserPolicy(input *iam.DeleteUserPolicyInput) (*iam.DeleteUserPolicyOutput, error) {
 	return c.iamClient.DeleteUserPolicy(input)
 }
+
 func (c *awsClient) GetUser(input *iam.GetUserInput) (*iam.GetUserOutput, error) {
 	return c.iamClient.GetUser(input)
 }
@@ -192,6 +198,10 @@ func (c *awsClient) CreateHostedZone(input *route53.CreateHostedZoneInput) (*rou
 
 func (c *awsClient) DeleteHostedZone(input *route53.DeleteHostedZoneInput) (*route53.DeleteHostedZoneOutput, error) {
 	return c.route53Client.DeleteHostedZone(input)
+}
+
+func (c *awsClient) GetCallerIdentity(input *sts.GetCallerIdentityInput) (*sts.GetCallerIdentityOutput, error) {
+	return c.stsClient.GetCallerIdentity(input)
 }
 
 // NewClient creates our client wrapper object for the actual AWS clients we use.
@@ -239,5 +249,6 @@ func NewClient(kubeClient client.Client, secretName, namespace, region string) (
 		iamClient:     iam.New(s),
 		s3Client:      s3.New(s),
 		route53Client: route53.New(s),
+		stsClient:     sts.New(s),
 	}, nil
 }
