@@ -215,8 +215,8 @@ func TestConvert(t *testing.T) {
 		expectedInstallConfig *installtypes.InstallConfig
 	}{
 		{
-			name: "full copy",
-			cd:   buildValidClusterDeployment(),
+			name:                  "full copy",
+			cd:                    buildValidClusterDeployment(),
 			expectedInstallConfig: buildBaseExpectedInstallConfig(),
 		},
 		{
